@@ -169,6 +169,7 @@ OPTIONS = [
     "ocsp-startup",
     "no-verify-ocsp",
     "verify-client-tolerate-expired",
+    "tls-postpone-early-data",
 ]
 
 LOGVARS = [

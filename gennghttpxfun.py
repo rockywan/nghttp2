@@ -170,6 +170,7 @@ OPTIONS = [
     "no-verify-ocsp",
     "verify-client-tolerate-expired",
     "tls-postpone-early-data",
+    "tls-max-early-data",
 ]
 
 LOGVARS = [

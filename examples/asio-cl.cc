@@ -24,11 +24,11 @@
  */
 
 #include <iostream>
-
+#include <thread>
 #include <nghttp2/asio_http2_client.h>
 
 using boost::asio::ip::tcp;
-
+using namespace std;
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::client;
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     }
     boost::system::error_code ec;
     boost::asio::io_service io_service;
-
+    boost::asio::io_service::work work(io_service);
     std::string uri = argv[1];
     std::string scheme, host, service;
 
@@ -58,7 +58,9 @@ int main(int argc, char *argv[]) {
     auto sess = scheme == "https" ? session(io_service, tls_ctx, host, service)
                                   : session(io_service, host, service);
 
-    sess.on_connect([&sess, &uri](tcp::resolver::iterator endpoint_it) {
+    bool connected = false;
+    auto connect_handler = [&sess, &uri, &connected](tcp::resolver::iterator endpoint_it) {
+      cout<<this_thread::get_id<<endl;
       boost::system::error_code ec;
       auto req = sess.submit(ec, "GET", uri);
 
@@ -66,6 +68,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "error: " << ec.message() << std::endl;
         return;
       }
+
+      connected = true;
 
       req->on_response([](const response &res) {
         std::cerr << "HTTP/2 " << res.status_code() << std::endl;
@@ -77,10 +81,25 @@ int main(int argc, char *argv[]) {
         res.on_data([](const uint8_t *data, std::size_t len) {
           std::cerr.write(reinterpret_cast<const char *>(data), len);
           std::cerr << std::endl;
+          cout<<"end receiving"<<endl;
         });
       });
 
-      req->on_close([&sess](uint32_t error_code) { sess.shutdown(); });
+      req->on_close([&sess](uint32_t error_code) {
+        // sess.shutdown();
+        cout<<"closing"<<endl; });
+    };
+    sess.on_connect(connect_handler);
+
+    cout<<this_thread::get_id<<endl;
+    tcp::resolver::iterator ep_it;
+    thread t_post([&]() {
+      while(true) {
+        if (connected) {
+          io_service.post(bind(connect_handler, ep_it));
+        }
+        this_thread::sleep_for(2s);
+      }
     });
 
     sess.on_error([](const boost::system::error_code &ec) {
@@ -88,6 +107,7 @@ int main(int argc, char *argv[]) {
     });
 
     io_service.run();
+    t_post.join();
   } catch (std::exception &e) {
     std::cerr << "exception: " << e.what() << "\n";
   }

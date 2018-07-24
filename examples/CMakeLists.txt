@@ -27,7 +27,7 @@ if(ENABLE_EXAMPLES)
   add_executable(deflate          deflate.c $<TARGET_OBJECTS:http-parser>)
 
   if(ENABLE_ASIO_LIB)
-    foreach(name asio-sv asio-sv2 asio-cl asio-cl2)
+    foreach(name asio-sv asio-sv2 asio-sv3 asio-cl asio-cl2)
       add_executable(${name} ${name}.cc $<TARGET_OBJECTS:http-parser>)
       target_include_directories(${name} PRIVATE
         ${OPENSSL_INCLUDE_DIRS}

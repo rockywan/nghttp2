@@ -53,7 +53,7 @@ deflate_SOURCES = deflate.c
 
 if ENABLE_ASIO_LIB
 
-noinst_PROGRAMS += asio-sv asio-sv2 asio-sv3 asio-cl asio-cl2
+noinst_PROGRAMS += asio-sv asio-sv2 asio-sv3 asio-sv4 asio-cl asio-cl2
 
 # AM_CPPFLAGS must be placed first, so that header file (e.g.,
 # nghttp2/nghttp2.h) in this package is used rather than installed
@@ -80,6 +80,10 @@ asio_sv2_LDADD = ${ASIOLDADD}
 asio_sv3_SOURCES = asio-sv3.cc
 asio_sv3_CPPFLAGS = ${ASIOCPPFLAGS}
 asio_sv3_LDADD = ${ASIOLDADD}
+
+asio_sv4_SOURCES = asio-sv4.cc
+asio_sv4_CPPFLAGS = ${ASIOCPPFLAGS}
+asio_sv4_LDADD = ${ASIOLDADD}
 
 asio_cl_SOURCES = asio-cl.cc
 asio_cl_CPPFLAGS = ${ASIOCPPFLAGS}

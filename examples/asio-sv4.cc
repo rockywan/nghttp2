@@ -23,7 +23,8 @@ struct Stream : public std::enable_shared_from_this<Stream> {
       }
 
       self->res.write_head(200);
-      self->res.end("done");
+      self->res.end();
+      // self->res.end("done");
     });
   }
   void set_closed(bool f) {
@@ -69,7 +70,6 @@ int main(int argc, char **argv) {
     auto th = std::thread([&q]() {
       for (;;) {
         auto st = q.pop();
-        sleep(1);
         st->commit_result();
       }
     });
@@ -79,8 +79,15 @@ int main(int argc, char **argv) {
   server.handle("/", [&q](const request &req, const response &res) {
     auto &io_service = res.io_service();
     auto st = std::make_shared<Stream>(req, res, io_service);
-    // req.on_data([]());
-    res.on_close([&st](uint32_t error_code) { st->set_closed(true); });
+    std::cout << "new req" << std::endl;
+    req.on_data([](const uint8_t *data, std::size_t len) {
+      if (len)
+        std::cout << len << std::endl;
+        // std::cout << len << " " << (char *)data << std::endl;
+      else
+        std::cout << "EOF" << std::endl;
+    });
+    // res.on_close([&st](uint32_t error_code) { st->set_closed(true); });
     q.push(st);
   });
 
